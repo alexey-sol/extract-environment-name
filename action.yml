@@ -1,0 +1,29 @@
+name: "Extract environment name"
+
+description: "Extracts environment name on basis of passed branch name"
+
+inputs:
+  github-ref:
+    description: "GitHub ref variable from which environment name is going to be derived"
+    required: true
+
+outputs:
+  environment:
+    description: "Environment name derived from branch name"
+    value: ${{ steps.extract.outputs.environment }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Extract environment name"
+      id: extract
+      shell: bash
+      run: |
+        echo "::set-output name=environment::$(echo ${{ inputs.github-ref }} | sed -e '/^refs\/heads\/\(.*\)$/!d;s//\1/')"
+
+# Took this brilliant solution from here: https://stackoverflow.com/a/65358831
+
+# The idea is to take the name of the branch ("production") and dynamically pull off the relevant
+# environment (which is also named "production" in the case). It prevents a lot of code duplication.
+# Also it allows using environments feature instead of using only repo-level variables prefixed with
+# "PRODUCTION_" or "DEVELOP_".
